@@ -19,6 +19,10 @@
   .tagline { font-size:17px; margin:0 0 18px; }
   .tagline a { text-decoration:none; border-bottom:1px solid currentColor; }
   .sub { color:var(--muted); font-size:13.5px; margin:0 0 6px; }
+  .entry { max-width:660px; text-align:left; margin:18px 0 0; visibility:hidden; clip-path:inset(0 0 100% 0);
+    transition:clip-path 1.4s cubic-bezier(.45,.05,.25,1) .4s; }
+  .entry.shown, .editing .entry { visibility:visible; clip-path:inset(0 0 -10px 0); }
+  .entry em { font-style:italic; }
   .links { display:flex; gap:22px; margin-top:22px; font-size:13.5px; }
   .links a { color:var(--muted); text-decoration:none; }
   .links a:hover { color:var(--fg); }
@@ -51,8 +55,8 @@
 
   .swing { position:absolute; top:calc(var(--t) * 1cqw); left:calc(var(--w) * -.5cqw); width:calc(var(--w) * 1cqw);
     perspective:1000px; pointer-events:none;
-    clip-path:inset(-20px -30px 100% -30px); transition:clip-path 1.2s cubic-bezier(.45,.05,.25,1); }
-  .moment.open .swing { clip-path:inset(-20px -30px -30px -30px); pointer-events:auto; transition-delay:.45s; }
+    visibility:hidden; clip-path:inset(0 -30px 100% -30px); transition:clip-path 1.2s cubic-bezier(.45,.05,.25,1); }
+  .moment.open .swing { visibility:visible; clip-path:inset(-20px -30px -30px -30px); pointer-events:auto; transition-delay:.45s; }
 
   .card { position:relative; width:100%; height:calc(var(--h) * 1cqw); transform-style:preserve-3d;
     transition:transform .75s cubic-bezier(.3,.7,.3,1); }
@@ -158,6 +162,9 @@
     </div>
   </div>
 
+  <!-- ===== SUMMARY ===== -->
+  <p class="sub entry" id="entry" data-edit>Hi, I'm Teddy Stamatakos and I am an undergraduate student at UCLA studying economics. First and foremost I grew up in San Francisco, so it's to no surprise that my interests are in tech, innovation, and software and that these are the fields I principally work in. At the same time I am passionate about the arts; specifically film, design, and screenwriting, and I suppose prose if you would constitute it as an art. Three of my favorite books are <em>The Alchemist</em> by Paulo Coelho, <em>The Road to Wigan Pier</em> by George Orwell, and <em>Steve Jobs</em> by Walter Isaacson. With that in mind it's also to no surprise that I strongly believe in pursuing one's own dreams, mine being to blend technology, art and culture to promote a more liberated society.</p>
+
 </main>
 
 <div id="bar" hidden="">
@@ -187,7 +194,12 @@
   page.addEventListener('click', e => {
     // dots: drop the photo (stays out once opened)
     const dot = e.target.closest('.dot');
-    if (dot) { dot.closest('.moment').classList.add('open'); return; }
+    if (dot) {
+      dot.closest('.moment').classList.add('open');
+      if (page.querySelectorAll('.moment.open').length === page.querySelectorAll('.moment').length)
+        document.getElementById('entry').classList.add('shown');
+      return;
+    }
 
     // links: change the URL while editing
     const a = e.target.closest('a');
@@ -227,7 +239,7 @@
   // Download the edited page as a clean index.html
   dl.onclick = () => {
     const wasEditing = editing; setEditing(false);
-    const state = [...page.querySelectorAll('.open, .flipped')].map(el => [el, [...el.classList].filter(c => c === 'open' || c === 'flipped')]);
+    const state = [...page.querySelectorAll('.open, .flipped, .shown')].map(el => [el, [...el.classList].filter(c => c === 'open' || c === 'flipped' || c === 'shown')]);
     state.forEach(([el, cs]) => el.classList.remove(...cs));
     bar.hidden = true;
     const html = '<!doctype html>\n' + document.documentElement.outerHTML;
